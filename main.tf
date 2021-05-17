@@ -210,29 +210,13 @@ resource "aws_elasticsearch_domain" "default" {
 }
 
 data "aws_iam_policy_document" "default" {
-  count = module.this.enabled && (length(var.iam_authorizing_role_arns) > 0 || length(var.iam_role_arns) > 0) ? 1 : 0
-
-  statement {
-    effect = "Allow"
-
-    actions = distinct(compact(var.iam_actions))
-
-    resources = [
-      join("", aws_elasticsearch_domain.default.*.arn),
-      "${join("", aws_elasticsearch_domain.default.*.arn)}/*"
-    ]
-
-    principals {
-      type        = "AWS"
-      identifiers = distinct(compact(concat(var.iam_role_arns, aws_iam_role.elasticsearch_user.*.arn)))
-    }
-  }
+  count = module.this.enabled ? 1 : 0
 
   # This statement is for non VPC ES to allow anonymous access from whitelisted IP ranges without requests signing
   # https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-ac.html#es-ac-types-ip
   # https://aws.amazon.com/premiumsupport/knowledge-center/anonymous-not-authorized-elasticsearch/
   dynamic "statement" {
-    for_each = length(var.allowed_cidr_blocks) > 0 && ! var.vpc_enabled ? [true] : []
+    for_each = length(var.allowed_cidr_blocks) > 0 ? [true] : []
     content {
       effect = "Allow"
 
