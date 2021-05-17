@@ -231,12 +231,6 @@ data "aws_iam_policy_document" "default" {
         type        = "AWS"
         identifiers = ["*"]
       }
-
-      condition {
-        test     = "IpAddress"
-        values   = var.allowed_cidr_blocks
-        variable = "aws:SourceIp"
-      }
     }
   }
 }
